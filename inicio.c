@@ -3,8 +3,9 @@
 #include "juego.h"
 #include <stdio.h>
 #include <stdbool.h>
-#define ocupado 1
-#define agua 0
+#define barco 2
+#define agua 1
+#define vacio 0
 #define legal(x) (x>=0 && x<10)
 
 int max(int x, int y){
@@ -21,7 +22,7 @@ bool alrededores(int tablero[10][10], int x, int y){
 	for(int i=-1; i<2; i++){
 		for(int j=-1; j<2; j++){
 			if(legal(x-i) && legal(y-j) &&
-				tablero[x-i][y-j] == ocupado)
+				tablero[x-i][y-j] == barco)
 				return true;
 		}
 	}
@@ -46,7 +47,7 @@ void init(struct list** jugador1,
 			tableros[0][j][k] = \
 			tableros[1][j][k] = agua;
 			anotadores[0][j][k] = \
-			anotadores[1][j][k] = agua;
+			anotadores[1][j][k] = vacio;
 		}
 	}
 	
@@ -65,22 +66,22 @@ void construir(struct list** jugadores, int tableros[2][10][10])
 	int jugador = 0;
 	
 	do{		
-		int cantidades[] = {1, 2, 3, 1};
+		int cantidades[] = {0, 1, 0, 0};
 		const char* barcos[] = {"Submarino", "Destructor",
 								"Crucero", "Acorazado"};
 		nuevo_barco:{
 		cls();
 		
 		printf("\tJugador actual: Jugador%i\n", jugador);
-		printf("\tBarcos restantes:\n");
+		printf("Barcos restantes:\n");
 		
 		for(int i=0; i<4; i++)
-			printf("%i\t%s\n", cantidades[i], barcos[i]);
+			printf("%i\t%s[%i]\n", i, barcos[i], cantidades[i]);
 		
 		int entrada;
 		confirm_input:{
 
-		printf("Ingrese un indice(0-3) para seleccionar un barco");
+		printf("\nIngrese un indice(0-3) para seleccionar un barco:\n");
 		scanf("%i%*c", &entrada);
 		
 		if(entrada < 0 || entrada > 3){
@@ -99,20 +100,21 @@ void construir(struct list** jugadores, int tableros[2][10][10])
 		insert_barco:{
 		cls();
 		
+		printf("Mapa tactico:\n");
 		mostrar_mapa(tableros[jugador]);
 		
-		printf("\tBarco seleccionado: %s\n\n", barcos[entrada]);
+		printf("\tBarco seleccionado: %s (largo = %i)\n\n", barcos[entrada], entrada+1);
 		
 		do{
 			//incluir mensaje de error
-			printf("Ingrese un valor x e y inicial");
+			printf("Ingrese un valor x e y inicial:\n");
 			scanf("%i%i%*c", &x1, &y1);
 		}while(x1 < 0 || x1 >= 10 ||
 				y1 < 0 || y1 >= 10);
 					
 		do{
 			//incluir mensaje de error
-			printf("Ingrese un valor x e y final");
+			printf("Ingrese un valor x e y final:\n");
 			scanf("%i%i%*c", &x2, &y2);
 		}while(x2 < 0 || x2 >= 10 ||
 				y2 < 0 || y2 >= 10);
@@ -128,6 +130,7 @@ void construir(struct list** jugadores, int tableros[2][10][10])
 			
 		if(!entrada_valida){
 			printf("Forma del barco erronea. Vuelva a intentar");
+			fflush(stdout);
 			sleep(2);
 			
 			goto insert_barco;
@@ -137,8 +140,9 @@ void construir(struct list** jugadores, int tableros[2][10][10])
 		if(dist_x == 0){
 			for(int i=min(y1, y2); i < max(y1, y2); i++){
 				if(alrededores(tableros[jugador], x1, i)){
-					printf("El rango seleccionado coincide con los alrededores o con una "
+					printf("El rango seleccionado coincide con los alrededores o \ncon una "
 					"casilla de otro barco. Vuelva a intentar");
+					fflush(stdout);
 					sleep(2);
 					
 					goto insert_barco;
@@ -148,15 +152,16 @@ void construir(struct list** jugadores, int tableros[2][10][10])
 			//dibujar barco
 			int *aux = malloc(sizeof(int)); (*aux) = entrada+1;
 			for(int i=min(y1, y2); i < max(y1, y2); i++){
-				tableros[jugador][x1][i] = ocupado;
+				tableros[jugador][x1][i] = barco;
 				
 				insertList(&jugadores[jugador][x1], i, aux);
 			}
 		} else { // dist_y = 0
 			for(int i=min(x1, x2); i<max(x1, x2); i++){
 				if(alrededores(tableros[jugador], i, y1)){
-					printf("El rango seleccionado coincide con los alrededores o con una "
+					printf("El rango seleccionado coincide con los alrededores o \ncon una "
 					"casilla de otro barco. Vuelva a intentar");
+					fflush(stdout);
 					sleep(2);
 					
 					goto insert_barco;
@@ -166,7 +171,7 @@ void construir(struct list** jugadores, int tableros[2][10][10])
 			//dibujar barco
 			int *aux = malloc(sizeof(int)); (*aux) = entrada+1;
 			for(int i=min(x1, x2); i < max(x1, x2); i++){
-				tableros[jugador][i][y1] = ocupado;
+				tableros[jugador][i][y1] = barco;
 				
 				insertList(&jugadores[jugador][i], y1, aux);
 			}

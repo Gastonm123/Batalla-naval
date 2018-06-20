@@ -16,4 +16,8 @@
 	
 	void insertList(struct list*, int, int*);
 	
+	void mostrar_list(struct list);
+	
+	void liberar_nodo(struct node*);
+	
 #endif //UTILITIES_H

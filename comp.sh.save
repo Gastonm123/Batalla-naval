@@ -1,0 +1,4 @@
+#!/bin/bash
+
+gcc inicio.c main.c juego.c utilities.c -o prog.o 2> ERR.log
+
